@@ -63,10 +63,10 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _pickAndReadExcel() async {
     // Abre o file picker para selecionar um arquivo
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['xlsx', 'xls'], // Permite apenas arquivos Excel
-    );
+    // FilePickerResult? result = await FilePicker.platform.pickFiles(
+    //   type: FileType.custom,
+    //   allowedExtensions: ['xlsx', 'xls'], // Permite apenas arquivos Excel
+    // );
 
     // if (result != null) {
     //   Uint8List? fileBytes = result.files.first.bytes;

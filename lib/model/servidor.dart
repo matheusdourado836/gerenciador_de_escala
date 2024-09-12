@@ -33,9 +33,17 @@ bool isWeekend(DateTime date) {
 
 DateTime getPreviousBusinessDay(DateTime startDate) {
   DateTime date = startDate.subtract(const Duration(days: 1));
-  while (isWeekend(date)) {
-    while(date.weekday != DateTime.friday) {
-      date = date.subtract(const Duration(days: 1));
+  if(startDate.weekday == DateTime.monday) {
+    return startDate.subtract(const Duration(days: 3));
+  }
+  if(startDate.weekday == DateTime.monday) {
+    return startDate.subtract(const Duration(days: 2));
+  }
+  if(isWeekend(date)) {
+    if(date.weekday == DateTime.saturday) {
+      date = startDate.subtract(const Duration(days: 1));
+    }else {
+      date = startDate.subtract(const Duration(days: 2));
     }
   }
   return date;
@@ -57,15 +65,19 @@ DateTime getReturnDay(DateTime endDate) {
 }
 
 DateTime calculate10DaysBefore(DateTime vacationStart) {
+  //print('DIA QUE TA CHEGANDO $vacationStart');
   DateTime firstBusinessDay = getPreviousBusinessDay(vacationStart);
   DateTime tenDaysBefore = firstBusinessDay.subtract(const Duration(days: 9));
   if(isWeekend(tenDaysBefore)) {
     if(tenDaysBefore.weekday == DateTime.saturday) {
-      return tenDaysBefore.add(const Duration(days: 2));
+      return tenDaysBefore.subtract(const Duration(days: 1));
     }else {
-      return tenDaysBefore.add(const Duration(days: 1));
+      return tenDaysBefore.subtract(const Duration(days: 2));
     }
   }
+  // if(tenDaysBefore.weekday == DateTime.monday) {
+  //   return tenDaysBefore.subtract(const Duration(days: 1));
+  // }
   return tenDaysBefore;
 }
 
@@ -125,7 +137,7 @@ List<Map<String, dynamic>> servidores = [
   },
   {
     "nome": 'Romina',
-    "ferias": "23/10/2024 a 30/10/2024",
+    "ferias": "28/10/2024 a 30/10/2024",
     "ultimoDiaUtil": ""
   },
   {

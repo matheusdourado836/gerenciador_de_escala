@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('pt', 'BR')],
+      debugShowCheckedModeBanner: false,
       title: 'Gerenciador de escala',
       initialRoute: '/home',
       theme: ThemeData(

@@ -65,7 +65,6 @@ DateTime getReturnDay(DateTime endDate) {
 }
 
 DateTime calculate10DaysBefore(DateTime vacationStart) {
-  //print('DIA QUE TA CHEGANDO $vacationStart');
   DateTime firstBusinessDay = getPreviousBusinessDay(vacationStart);
   DateTime tenDaysBefore = firstBusinessDay.subtract(const Duration(days: 9));
   if(isWeekend(tenDaysBefore)) {
@@ -75,9 +74,14 @@ DateTime calculate10DaysBefore(DateTime vacationStart) {
       return tenDaysBefore.subtract(const Duration(days: 2));
     }
   }
-  // if(tenDaysBefore.weekday == DateTime.monday) {
-  //   return tenDaysBefore.subtract(const Duration(days: 1));
-  // }
+
+  return tenDaysBefore;
+}
+
+DateTime calculatePreparation(DateTime vacationStart) {
+  DateTime firstBusinessDay = getPreviousBusinessDay(vacationStart);
+  DateTime tenDaysBefore = firstBusinessDay.subtract(const Duration(days: 9));
+
   return tenDaysBefore;
 }
 

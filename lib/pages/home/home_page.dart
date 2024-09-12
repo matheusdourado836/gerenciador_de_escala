@@ -45,14 +45,14 @@ class _HomePageState extends State<HomePage> {
   // Função para carregar os servidores do JSON
   Future<void> loadServidores() async {
     servidoresList = [];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    final servidoresJson = prefs.getString('planilha');
-    if(servidoresJson?.isNotEmpty ?? false) {
-      for(var servidor in jsonDecode(servidoresJson!)) {
-        servidoresList.add(fromJson(servidor));
-      }
-    }
+    // final SharedPreferences prefs = await SharedPreferences.getInstance();
+    //
+    // final servidoresJson = prefs.getString('planilha');
+    // if(servidoresJson?.isNotEmpty ?? false) {
+    //   for(var servidor in jsonDecode(servidoresJson!)) {
+    //     servidoresList.add(fromJson(servidor));
+    //   }
+    // }
 
     return;
   }
@@ -68,59 +68,59 @@ class _HomePageState extends State<HomePage> {
       allowedExtensions: ['xlsx', 'xls'], // Permite apenas arquivos Excel
     );
 
-    if (result != null) {
-      Uint8List? fileBytes = result.files.first.bytes;
-      if (fileBytes != null) {
-        // Carrega o arquivo Excel
-        var excel = Excel.decodeBytes(fileBytes);
-
-        List<Map<String, String>> rowsData = [];
-
-        for (var table in excel.tables.keys) {
-          var sheet = excel.tables[table]!;
-
-          if (sheet.rows.isEmpty) continue; // Se não houver dados, ignorar
-
-          // A primeira linha contém os nomes das colunas (headers)
-          List<String> headers = sheet.rows.first.map((cell) => cell?.value?.toString() ?? '').toList();
-
-          // Iterar sobre as linhas de dados (começando na segunda linha, ou seja, índice 1)
-          for (var i = 1; i < sheet.rows.length; i++) {
-            var row = sheet.rows[i];
-
-            // Evitar adicionar objetos vazios
-            if (row.every((cell) => cell?.value == null || (cell?.value.toString().isEmpty ?? true))) {
-              continue;
-            }
-
-            Map<String, String> rowData = {};
-
-            for (var j = 0; j < headers.length; j++) {
-              String key = headers[j];
-
-              // Ignorando a coluna de feriados/recesso
-              if (key.toLowerCase().contains('feriado')) {
-                continue;
-              }
-
-              String value = row[j]?.value?.toString() ?? '';
-              rowData[key] = value;
-            }
-
-            rowsData.add(rowData);
-          }
-        }
-
-        // Serializando os dados mapeados
-        String excelData = jsonEncode(rowsData);
-
-        // Salvando no SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('planilha', excelData);
-        await loadServidores();
-        setState(() {});
-      }
-    }
+    // if (result != null) {
+    //   Uint8List? fileBytes = result.files.first.bytes;
+    //   if (fileBytes != null) {
+    //     // Carrega o arquivo Excel
+    //     var excel = Excel.decodeBytes(fileBytes);
+    //
+    //     List<Map<String, String>> rowsData = [];
+    //
+    //     for (var table in excel.tables.keys) {
+    //       var sheet = excel.tables[table]!;
+    //
+    //       if (sheet.rows.isEmpty) continue; // Se não houver dados, ignorar
+    //
+    //       // A primeira linha contém os nomes das colunas (headers)
+    //       List<String> headers = sheet.rows.first.map((cell) => cell?.value?.toString() ?? '').toList();
+    //
+    //       // Iterar sobre as linhas de dados (começando na segunda linha, ou seja, índice 1)
+    //       for (var i = 1; i < sheet.rows.length; i++) {
+    //         var row = sheet.rows[i];
+    //
+    //         // Evitar adicionar objetos vazios
+    //         if (row.every((cell) => cell?.value == null || (cell?.value.toString().isEmpty ?? true))) {
+    //           continue;
+    //         }
+    //
+    //         Map<String, String> rowData = {};
+    //
+    //         for (var j = 0; j < headers.length; j++) {
+    //           String key = headers[j];
+    //
+    //           // Ignorando a coluna de feriados/recesso
+    //           if (key.toLowerCase().contains('feriado')) {
+    //             continue;
+    //           }
+    //
+    //           String value = row[j]?.value?.toString() ?? '';
+    //           rowData[key] = value;
+    //         }
+    //
+    //         rowsData.add(rowData);
+    //       }
+    //     }
+    //
+    //     // Serializando os dados mapeados
+    //     String excelData = jsonEncode(rowsData);
+    //
+    //     // Salvando no SharedPreferences
+    //     SharedPreferences prefs = await SharedPreferences.getInstance();
+    //     await prefs.setString('planilha', excelData);
+    //     await loadServidores();
+    //     setState(() {});
+    //   }
+    // }
   }
 
   @override

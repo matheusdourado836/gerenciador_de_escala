@@ -1,5 +1,5 @@
 name: escala_trabalho
-description: "Gerenciador de escalas de trabalho de servidores do TJDF"
+description: "Gerenciador de escalas de trabalho de servidores do TJDFT"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
   flutter_localization: ^0.2.2
   timezone: ^0.9.4
@@ -39,6 +41,7 @@ dependencies:
   excel_to_json: ^1.4.0
   excel: ^4.0.6
   open_file: ^3.4.0
+  shared_preferences: ^2.3.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

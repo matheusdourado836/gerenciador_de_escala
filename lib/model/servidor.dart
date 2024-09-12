@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 class Servidor {
   String nome;
   List<DateTime>? ferias;  // Pode ser nulo se o servidor não tiver férias
@@ -91,17 +89,23 @@ List<DateTime>? parseFerias(String? feriasString) {
   }
 
   List<String> datas = feriasString.split(' a ');
-  DateFormat format = DateFormat('dd/MM/yyyy');
 
-  DateTime start = format.parse(datas[0]);
-  DateTime end = format.parse(datas[1]);
+  try {
+    DateTime start = DateTime.parse(datas[0]);
+    DateTime end = DateTime.parse(datas[1]);
 
-  return [start, end];
+    return [start, end];
+  } catch (e) {
+    print('Erro ao processar as datas: $e');
+    return null;
+  }
 }
 
 Servidor fromJson(Map<String, dynamic> json) {
   String nome = json['nome'];
-  List<DateTime>? ferias = parseFerias(json['ferias']);
+  String inicioFerias = json["inicio_ferias"];
+  String fimFerias = json["final_ferias"];
+  List<DateTime>? ferias = parseFerias('$inicioFerias a $fimFerias');
 
   DateTime? ultimoDiaUtil;
   DateTime? diaDeRetorno;
@@ -118,40 +122,40 @@ Servidor fromJson(Map<String, dynamic> json) {
   );
 }
 
-List<Map<String, dynamic>> servidores = [
-  {
-    "nome": 'Alessia',
-    "ferias": "25/09/2024 a 08/10/2024",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Erica',
-    "ferias": "",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Jose Maria',
-    "ferias": "",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Marcelo',
-    "ferias": "03/10/2024 a 05/10/2024",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Romina',
-    "ferias": "28/10/2024 a 30/10/2024",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Ronaldo',
-    "ferias": "",
-    "ultimoDiaUtil": ""
-  },
-  {
-    "nome": 'Carlos',
-    "ferias": "28/10/2024 a 15/11/2024",
-    "ultimoDiaUtil": ""
-  },
-];
+// List<Map<String, dynamic>> servidores = [
+//   {
+//     "nome": 'Alessia',
+//     "ferias": "25/09/2024 a 08/10/2024",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Erica',
+//     "ferias": "",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Jose Maria',
+//     "ferias": "",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Marcelo',
+//     "ferias": "03/10/2024 a 05/10/2024",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Romina',
+//     "ferias": "28/10/2024 a 30/10/2024",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Ronaldo',
+//     "ferias": "",
+//     "ultimoDiaUtil": ""
+//   },
+//   {
+//     "nome": 'Carlos',
+//     "ferias": "28/10/2024 a 15/11/2024",
+//     "ultimoDiaUtil": ""
+//   },
+// ];

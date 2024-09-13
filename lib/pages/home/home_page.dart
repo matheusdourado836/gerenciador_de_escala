@@ -170,28 +170,26 @@ class _HomePageState extends State<HomePage> {
                   DateTime currentDay = DateTime(2024, month, i + 1);
                   String formattedDate = formatDateExtenso(currentDay);
                   if(!isWeekend(currentDay)) {
-                    // Pega o primeiro servidor na posição do count
-                    Servidor servidorAtual = filaServidores[count];
 
                     // Verifica se o servidor está de férias ou nos 10 dias anteriores ao início das férias
                     bool estaDeFerias = false;
-                    if (servidorAtual.ferias != null && servidorAtual.ferias!.isNotEmpty) {
+                    if (filaServidores[count].ferias != null && filaServidores[count].ferias!.isNotEmpty) {
                       // Verifica se o servidor está de férias no dia atual ou nos 10 dias anteriores
-                      DateTime dezDiasAntes = calculate10DaysBefore(servidorAtual.ultimoDiaUtil!);
-                      if ((currentDay == dezDiasAntes || currentDay.isAfter(dezDiasAntes)) && currentDay.isBefore(servidorAtual.diaDeRetorno!)) {
+                      DateTime dezDiasAntes = calculate10DaysBefore(filaServidores[count].ultimoDiaUtil!);
+                      if ((currentDay == dezDiasAntes || currentDay.isAfter(dezDiasAntes)) && currentDay.isBefore(filaServidores[count].diaDeRetorno!)) {
                         estaDeFerias = true;
                       }
 
                     }
                     if (estaDeFerias) {
-                      servidoresDeFerias.add(servidorAtual);
+                      servidoresDeFerias.add(filaServidores[count]);
                       filaServidores.removeAt(count);
                     }
 
                     for(var servidor in servidoresDeFerias) {
                       if(servidor.diaDeRetorno != null) {
                         if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
-                          filaServidores.insert(count + 1, servidor); // Adiciona o novo servidor no lugar do dia de retorno
+                          filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
                         }
                       }
                     }
@@ -262,6 +260,31 @@ class _HomePageState extends State<HomePage> {
                         const DataCell(Text('SEM FÉRIAS')),
                       ]);
                     }
+                  }).toList()
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 40.0),
+              child: DataTable(
+                  dataRowMinHeight: 50,
+                  dataRowMaxHeight: 80,
+                  headingTextStyle: const TextStyle(fontWeight: FontWeight.bold),
+                  border: const TableBorder(
+                    left: BorderSide(width: .5),
+                    right: BorderSide(width: .5),
+                    top: BorderSide(width: .5),
+                    bottom: BorderSide(width: .5),
+                    verticalInside: BorderSide(width: .5),
+                  ),
+                  columns: const [
+                    DataColumn(label: Text('Feriados do mês')),
+                  ],
+                  rows: feriados.map((feriado) {
+                    DateFormat format = DateFormat('dd/MM/yyyy');
+                    final feriadoFormatted = format.format(feriado);
+                    return DataRow(cells: [
+                      DataCell(Text(feriadoFormatted, style: const TextStyle(fontWeight: FontWeight.bold))),
+                    ]);
                   }).toList()
               ),
             ),

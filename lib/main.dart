@@ -19,13 +19,13 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('pt', 'BR')],
       debugShowCheckedModeBanner: false,
       title: 'Gerenciador de escala',
-      initialRoute: '/home',
+      initialRoute: '/',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromRGBO(60, 141, 188, 1)),
         useMaterial3: true,
       ),
       routes: {
-        "/home": (context) => const HomePage()
+        "/": (context) => const HomePage()
       },
     );
   }

@@ -42524,7 +42524,7 @@ $1(a){return J.d7(a)},
 $S:146}
 A.JI.prototype={
 V(a){var s=A.aul(null,A.aBD(B.ac,B.GZ),!0)
-return new A.w1(A.aL(["/home",new A.a7g()],t.N,t.Ab),"/home","Gerenciador de escala",s,B.Wd,B.Rh,!1,null)}}
+return new A.w1(A.aL(["/",new A.a7g()],t.N,t.Ab),"/","Gerenciador de escala",s,B.Wd,B.Rh,!1,null)}}
 A.a7g.prototype={
 $1(a){return B.N_},
 $S:310}

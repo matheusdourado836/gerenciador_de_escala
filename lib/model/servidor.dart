@@ -84,7 +84,7 @@ DateTime calculatePreparation(DateTime vacationStart) {
 }
 
 List<DateTime>? parseFerias(String? feriasString) {
-  if (feriasString == null || feriasString.isEmpty) {
+  if (feriasString == null || feriasString.isEmpty || !feriasString.contains('-')) {
     return null;
   }
 

@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'package:escala_trabalho/model/servidor.dart';
 import 'dart:html' as html;
 import 'package:excel/excel.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+List<DateTime> feriados = [];
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,12 +19,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<List<Data?>> excelData = [];
-  List<DateTime> feriados = [];
   List<Servidor> servidoresList = [];
   List<Servidor> servidoresDeFerias = [];
+  List<Map<String, dynamic>> excelExportData = [];
   int year = 0;
   int month = 0;
   int days = 0;
+  bool _loading = false;
 
   @override
   void initState() {
@@ -48,15 +52,18 @@ class _HomePageState extends State<HomePage> {
   // Função para carregar os servidores do JSON
   Future<void> loadServidores() async {
     servidoresList = [];
+    setState(() => _loading = true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     final servidoresJson = prefs.getString('planilha');
+    final feriadosList = prefs.getStringList('feriados') ?? [];
+    feriados = feriadosList.map((f) => DateTime.parse(f)).toList();
     if(servidoresJson?.isNotEmpty ?? false) {
       for(var servidor in jsonDecode(servidoresJson!)) {
         servidoresList.add(fromJson(servidor));
       }
     }
-
+    setState(() => _loading = false);
     return;
   }
 
@@ -65,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _pickAndReadExcel() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     // Cria um input de arquivo HTML
     final html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
     uploadInput.accept = '.xlsx, .xls'; // Permite apenas arquivos Excel
@@ -84,6 +92,7 @@ class _HomePageState extends State<HomePage> {
         var excel = Excel.decodeBytes(fileBytes);
 
         List<Map<String, String>> rowsData = [];
+        List<String> feriadosList = [];
 
         for (var table in excel.tables.keys) {
           var sheet = excel.tables[table]!;
@@ -110,7 +119,7 @@ class _HomePageState extends State<HomePage> {
               // Ignorando a coluna de feriados/recesso
               if (key.toLowerCase().contains('feriado')) {
                 if(row[j]?.value?.toString().isNotEmpty ?? false) {
-                  feriados.add(DateTime.parse(row[j]?.value?.toString() ?? ''));
+                  feriadosList.add(row[j]?.value?.toString() ?? '');
                 }
                 continue;
               }
@@ -127,8 +136,10 @@ class _HomePageState extends State<HomePage> {
         String excelData = jsonEncode(rowsData);
 
         // Salvando no SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('planilha', excelData);
+        Future.wait([
+          prefs.setString('planilha', excelData),
+          prefs.setStringList('feriados', feriadosList)
+        ]);
         await loadServidores();
         setState(() {});
       });
@@ -136,6 +147,46 @@ class _HomePageState extends State<HomePage> {
 
     // Simula o clique no input de arquivo
     uploadInput.click();
+  }
+
+  Future<void> createExcelTable() async {
+    var excel = Excel.createExcel();
+    String sheetName = 'Escala mês de ${DateFormat('MMMM', 'pt_BR').format(DateTime.now().add(const Duration(days: 30)))}';
+    Sheet sheet = excel[sheetName];
+    sheet.setColumnWidth(0, 14);
+    sheet.setColumnWidth(1, 18);
+    sheet.setRowHeight(0, 20);
+    excel.setDefaultSheet(sheetName);
+    excel.delete('Sheet1');
+    final c1 = sheet.cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: 0));
+    final c2 = sheet.cell(CellIndex.indexByColumnRow(rowIndex: 0, columnIndex: 1));
+
+    CellStyle boldStyle = CellStyle(
+      bold: true,
+      fontFamily: getFontFamily(FontFamily.Arial), // Define a fonte como Arial, por exemplo
+    );
+
+    c1.value = TextCellValue('Data');
+    c2.value = TextCellValue('Servidor');
+    c1.cellStyle = boldStyle;
+    c2.cellStyle = boldStyle;
+
+    for(int i = 0; i < excelExportData.length; i++) {
+      var row = excelExportData[i];
+      sheet.cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 0)).value = TextCellValue(row['Data']);
+      sheet.cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 1)).value = TextCellValue(row['Servidor']);
+    }
+
+    // Salvar o arquivo Excel como bytes
+    excel.save(fileName: '$sheetName.xlsx');
+
+    // // Criar um link de download no navegador
+    // final blob = html.Blob([fileBytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    // final url = html.Url.createObjectUrlFromBlob(blob);
+    // html.AnchorElement(href: url)
+    //   ..setAttribute('download', 'tabelas_exportadas.xlsx')
+    //   ..click();
+    // html.Url.revokeObjectUrl(url); // Limpa a URL temporária
   }
 
   @override
@@ -146,12 +197,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           TextButton.icon(
               onPressed: _pickAndReadExcel,
-              label: const Text('Adicionar planilha', style: TextStyle(fontSize: 20),),
-              icon: const Icon(Icons.add, size: 32,)
+              label: const Text('Adicionar planilha', style: TextStyle(fontSize: 20)),
+              icon: const Icon(Icons.add, size: 32)
           ),
+          if(excelExportData.isNotEmpty)
+            TextButton.icon(onPressed: () => createExcelTable(), label: const Text('Exportar planilha', style: TextStyle(fontSize: 20)), icon: const Icon(CupertinoIcons.table, size: 28),)
         ]
       ),
-      body: servidoresList.isEmpty ? const Center(child: Text('NADA AQUI'),) : SingleChildScrollView(
+      body: (_loading) ? const Center(child: CircularProgressIndicator()) : servidoresList.isEmpty ? const Center(child: Text('NADA AQUI'),) : SingleChildScrollView(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -187,14 +240,18 @@ class _HomePageState extends State<HomePage> {
                     }
 
                     for(var servidor in servidoresDeFerias) {
-                      if(servidor.diaDeRetorno != null) {
-                        if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
-                          filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
-                        }
+                      if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
+                        filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
+                        servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
                       }
                     }
 
+                    if(count == filaServidores.length) {
+                      count = 0;
+                    }
+
                     // Adiciona a linha na tabela
+                    excelExportData.add({'Data': formattedDate, 'Servidor': filaServidores[count].nome});
                     rows.add(DataRow(
                       cells: [
                         DataCell(Text(formattedDate)),
@@ -208,6 +265,7 @@ class _HomePageState extends State<HomePage> {
                       count++;
                     }
                   }else {
+                    excelExportData.add({'Data': formattedDate, 'Servidor': 'FIM DE SEMANA'});
                     rows.add(DataRow(
                       cells: [
                         DataCell(Text(formattedDate)),

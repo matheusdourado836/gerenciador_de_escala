@@ -1,3 +1,5 @@
+import '../pages/home/home_page.dart';
+
 class Servidor {
   String nome;
   List<DateTime>? ferias;  // Pode ser nulo se o servidor não tiver férias
@@ -31,11 +33,19 @@ bool isWeekend(DateTime date) {
 
 DateTime getPreviousBusinessDay(DateTime startDate) {
   DateTime date = startDate.subtract(const Duration(days: 1));
-  if(startDate.weekday == DateTime.monday) {
-    return startDate.subtract(const Duration(days: 3));
+  if (feriados.contains(date)) {
+    // Se for feriado, retrocedemos para o dia anterior
+    DateTime anterior = date.subtract(const Duration(days: 1));
+
+    // Continuamos retrocedendo até encontrar um dia útil
+    while (_isFeriadoOuFinalDeSemana(anterior, feriados)) {
+      anterior = anterior.subtract(const Duration(days: 1));
+    }
+
+    return anterior; // Retorna o primeiro dia útil
   }
   if(startDate.weekday == DateTime.monday) {
-    return startDate.subtract(const Duration(days: 2));
+    return startDate.subtract(const Duration(days: 3));
   }
   if(isWeekend(date)) {
     if(date.weekday == DateTime.saturday) {
@@ -44,17 +54,21 @@ DateTime getPreviousBusinessDay(DateTime startDate) {
       date = startDate.subtract(const Duration(days: 2));
     }
   }
+
   return date;
+}
+
+bool _isFeriadoOuFinalDeSemana(DateTime data, List<DateTime> feriados) {
+  // Verifica se a data é um sábado, domingo ou feriado
+  return data.weekday == DateTime.saturday ||
+      data.weekday == DateTime.sunday ||
+      feriados.contains(data);
 }
 
 DateTime getReturnDay(DateTime endDate) {
   final DateTime date = endDate;
   if(isWeekend(date)) {
-    if(date.weekday == DateTime.saturday) {
-      return date.add(const Duration(days: 2));
-    }else {
-      return date.add(const Duration(days: 1));
-    }
+    return date.add(Duration(days: (date.weekday == DateTime.saturday) ? 2 : 1));
   }else if(date.add(const Duration(days: 1)).weekday == DateTime.saturday) {
     return date.add(const Duration(days: 3));
   }

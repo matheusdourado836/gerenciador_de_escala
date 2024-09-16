@@ -22,10 +22,11 @@ class _HomePageState extends State<HomePage> {
   List<Servidor> servidoresList = [];
   List<Servidor> servidoresDeFerias = [];
   List<Map<String, dynamic>> excelExportData = [];
+  List<DataRow> _rows = [];
+  Map<String, int> daysWorked = {};
   int year = 0;
   int month = 0;
   int days = 0;
-  bool _loading = false;
 
   @override
   void initState() {
@@ -34,6 +35,84 @@ class _HomePageState extends State<HomePage> {
     month = DateTime.now().month + 1;
     days = getDiasDoMes();
     loadServidores();
+  }
+  
+  void setRows() {
+    _rows = [];
+    List<Servidor> filaServidores = List.from(servidoresList); // Cópia da lista original
+    int count = 0;
+
+    if(filaServidores.isNotEmpty) {
+      // Iterar sobre todos os dias do mês
+      for (int i = 0; i < days; i++) {
+        DateTime currentDay = DateTime(2024, month, i + 1);
+        String formattedDate = formatDateExtenso(currentDay);
+        if(feriados.where((feriado) => feriado.month == currentDay.month && feriado.day == currentDay.day).isNotEmpty) {
+          excelExportData.add({'Data': formattedDate, 'Servidor': 'FERIADO'});
+          _rows.add(DataRow(
+            cells: [
+              DataCell(Text(formattedDate)),
+              const DataCell(Text('FERIADO')),
+            ],
+          ));
+        }else if(!isWeekend(currentDay)) {
+          // Verifica se o servidor está de férias ou nos 10 dias anteriores ao início das férias
+          bool estaDeFerias = false;
+          if (filaServidores[count].ferias != null && filaServidores[count].ferias!.isNotEmpty) {
+            // Verifica se o servidor está de férias no dia atual ou nos 10 dias anteriores
+            DateTime dezDiasAntes = calculate10DaysBefore(filaServidores[count].ultimoDiaUtil!);
+            if ((currentDay == dezDiasAntes || currentDay.isAfter(dezDiasAntes)) && currentDay.isBefore(filaServidores[count].diaDeRetorno!)) {
+              estaDeFerias = true;
+            }
+
+          }
+          if (estaDeFerias) {
+            servidoresDeFerias.add(filaServidores[count]);
+            filaServidores.removeAt(count);
+          }
+
+          for(var servidor in servidoresDeFerias) {
+            if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
+              filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
+              servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
+            }
+          }
+
+          if(count == filaServidores.length) {
+            count = 0;
+          }
+
+          if (daysWorked.containsKey(filaServidores[count].nome)) {
+            daysWorked[filaServidores[count].nome] = daysWorked[filaServidores[count].nome]! + 1;
+          } else {
+            daysWorked[filaServidores[count].nome] = 1;
+          }
+          // Adiciona a linha na tabela
+          excelExportData.add({'Data': formattedDate, 'Servidor': filaServidores[count].nome});
+          _rows.add(DataRow(
+            cells: [
+              DataCell(Text(formattedDate)),
+              DataCell(Text(filaServidores[count].nome)),
+            ],
+          ));
+
+          if(count >= filaServidores.length - 1) {
+            count = 0;
+          }else {
+            count++;
+          }
+        }else {
+          excelExportData.add({'Data': formattedDate, 'Servidor': 'FIM DE SEMANA'});
+          _rows.add(DataRow(
+            cells: [
+              DataCell(Text(formattedDate)),
+              const DataCell(Text('FIM DE SEMANA')),
+            ],
+          ));
+        }
+      }
+    }
+    setState(() => _rows);
   }
 
   int getDiasDoMes() {
@@ -51,8 +130,8 @@ class _HomePageState extends State<HomePage> {
 
   // Função para carregar os servidores do JSON
   Future<void> loadServidores() async {
+    excelExportData = [];
     servidoresList = [];
-    setState(() => _loading = true);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     final servidoresJson = prefs.getString('planilha');
@@ -63,7 +142,9 @@ class _HomePageState extends State<HomePage> {
         servidoresList.add(fromJson(servidor));
       }
     }
-    setState(() => _loading = false);
+
+    setRows();
+
     return;
   }
 
@@ -141,7 +222,6 @@ class _HomePageState extends State<HomePage> {
           prefs.setStringList('feriados', feriadosList)
         ]);
         await loadServidores();
-        setState(() {});
       });
     });
 
@@ -204,7 +284,7 @@ class _HomePageState extends State<HomePage> {
             TextButton.icon(onPressed: () => createExcelTable(), label: const Text('Exportar planilha', style: TextStyle(fontSize: 20)), icon: const Icon(CupertinoIcons.table, size: 28),)
         ]
       ),
-      body: (_loading) ? const Center(child: CircularProgressIndicator()) : servidoresList.isEmpty ? const Center(child: Text('NADA AQUI'),) : SingleChildScrollView(
+      body: servidoresList.isEmpty ? const Center(child: Text('NADA AQUI'),) : SingleChildScrollView(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -213,69 +293,7 @@ class _HomePageState extends State<HomePage> {
                 DataColumn(label: Text('Data')),
                 DataColumn(label: Text('Servidor')),
               ],
-              rows: () {
-                List<Servidor> filaServidores = List.from(servidoresList); // Cópia da lista original
-                List<DataRow> rows = [];
-                int count = 0;
-
-                // Iterar sobre todos os dias do mês
-                for (int i = 0; i < days; i++) {
-                  DateTime currentDay = DateTime(2024, month, i + 1);
-                  String formattedDate = formatDateExtenso(currentDay);
-                  if(!isWeekend(currentDay)) {
-
-                    // Verifica se o servidor está de férias ou nos 10 dias anteriores ao início das férias
-                    bool estaDeFerias = false;
-                    if (filaServidores[count].ferias != null && filaServidores[count].ferias!.isNotEmpty) {
-                      // Verifica se o servidor está de férias no dia atual ou nos 10 dias anteriores
-                      DateTime dezDiasAntes = calculate10DaysBefore(filaServidores[count].ultimoDiaUtil!);
-                      if ((currentDay == dezDiasAntes || currentDay.isAfter(dezDiasAntes)) && currentDay.isBefore(filaServidores[count].diaDeRetorno!)) {
-                        estaDeFerias = true;
-                      }
-
-                    }
-                    if (estaDeFerias) {
-                      servidoresDeFerias.add(filaServidores[count]);
-                      filaServidores.removeAt(count);
-                    }
-
-                    for(var servidor in servidoresDeFerias) {
-                      if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
-                        filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
-                        servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
-                      }
-                    }
-
-                    if(count == filaServidores.length) {
-                      count = 0;
-                    }
-
-                    // Adiciona a linha na tabela
-                    excelExportData.add({'Data': formattedDate, 'Servidor': filaServidores[count].nome});
-                    rows.add(DataRow(
-                      cells: [
-                        DataCell(Text(formattedDate)),
-                        DataCell(Text(filaServidores[count].nome)),
-                      ],
-                    ));
-
-                    if(count >= filaServidores.length - 1) {
-                      count = 0;
-                    }else {
-                      count++;
-                    }
-                  }else {
-                    excelExportData.add({'Data': formattedDate, 'Servidor': 'FIM DE SEMANA'});
-                    rows.add(DataRow(
-                      cells: [
-                        DataCell(Text(formattedDate)),
-                        const DataCell(Text('FIM DE SEMANA')),
-                      ],
-                    ));
-                  }
-                }
-                return rows;
-              }(),
+              rows: _rows,
             ),
             Padding(
               padding: const EdgeInsets.only(left: 40.0),
@@ -292,6 +310,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   columns: const [
                     DataColumn(label: Text('Nome')),
+                    DataColumn(label: Text('Qtd. vezes na escala')),
                     DataColumn(label: Text('Trabalha até')),
                     DataColumn(label: Text('Volta em')),
                     DataColumn(label: Text('Período de férias')),
@@ -304,6 +323,7 @@ class _HomePageState extends State<HomePage> {
                       final fimFerias = format.format(servidor.ferias![1]);
                       return DataRow(cells: [
                         DataCell(Text(servidor.nome, style: const TextStyle(fontWeight: FontWeight.bold))),
+                        DataCell(Text((daysWorked[servidor.nome] ?? 0).toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
                         DataCell(Text(formatDateExtenso(calculate10DaysBefore(servidor.ultimoDiaUtil!)))),
                         DataCell(Text(formatDateExtenso(servidor.diaDeRetorno!))),
                         DataCell(Text('$inicioFerias à $fimFerias')),
@@ -312,6 +332,7 @@ class _HomePageState extends State<HomePage> {
                     }else {
                       return DataRow(cells: [
                         DataCell(Text(servidor.nome, style: const TextStyle(fontWeight: FontWeight.bold))),
+                        DataCell(Text((daysWorked[servidor.nome] ?? 0).toString(), style: const TextStyle(fontWeight: FontWeight.bold))),
                         const DataCell(Text('SEM FÉRIAS')),
                         const DataCell(Text('SEM FÉRIAS')),
                         const DataCell(Text('SEM FÉRIAS')),

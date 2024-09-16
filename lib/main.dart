@@ -2,10 +2,22 @@ import 'package:escala_trabalho/pages/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-void main() {
+void main() async {
   setUrlStrategy(PathUrlStrategy());
-  runApp(const MyApp());
+  await SentryFlutter.init(
+        (options) {
+      options.dsn = 'https://7278aadba4a094b69fb6b7c6509f6ca1@o4507963534147584.ingest.us.sentry.io/4507963539128320';
+      // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
+      // We recommend adjusting this value in production.
+      options.tracesSampleRate = 1.0;
+      // The sampling rate for profiling is relative to tracesSampleRate
+      // Setting to 1.0 will profile 100% of sampled transactions:
+      options.profilesSampleRate = 1.0;
+    },
+    appRunner: () => runApp(const MyApp()),
+  );
 }
 
 class MyApp extends StatelessWidget {

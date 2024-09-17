@@ -90,12 +90,12 @@ class SheetProvider extends ChangeNotifier {
             filaServidores.removeAt(count);
           }
 
-          for(var servidor in servidoresDeFerias) {
-            if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
-              filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
-              servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
-            }
-          }
+          // for(var servidor in servidoresDeFerias) {
+          //   if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
+          //     filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
+          //     servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
+          //   }
+          // }
 
           if(count == filaServidores.length) {
             count = 0;

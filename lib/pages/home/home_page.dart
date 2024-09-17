@@ -23,7 +23,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     sheetProvider = Provider.of<SheetProvider>(context, listen: false);
-    WidgetsBinding.instance.addPostFrameCallback((_) => sheetProvider.loadServidores());
   }
 
   @override

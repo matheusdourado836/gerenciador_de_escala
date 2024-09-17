@@ -17,6 +17,7 @@ class SheetProvider extends ChangeNotifier {
   List<Map<String, dynamic>> excelExportData = [];
   List<DataRow> rows = [];
   Map<String, int> daysWorked = {};
+  String excelJson = '';
 
   bool loading = false;
 
@@ -27,16 +28,17 @@ class SheetProvider extends ChangeNotifier {
     try {
       loading = true;
       notifyListeners();
+      excelJson = '';
       daysWorked.clear();
       excelExportData = [];
       _servidoresList = [];
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-      final servidoresJson = prefs.getString('planilha');
-      final feriadosList = prefs.getStringList('feriados') ?? [];
-      feriados = feriadosList.map((f) => DateTime.parse(f)).toList();
-      if(servidoresJson?.isNotEmpty ?? false) {
-        for(var servidor in jsonDecode(servidoresJson!)) {
+      // final SharedPreferences prefs = await SharedPreferences.getInstance();
+      //
+      // final servidoresJson = prefs.getString('planilha');
+      // final feriadosList = prefs.getStringList('feriados') ?? [];
+      feriados = feriados.toList();
+      if(excelJson.isNotEmpty) {
+        for(var servidor in jsonDecode(excelJson)) {
           _servidoresList.add(fromJson(servidor));
         }
       }
@@ -195,13 +197,13 @@ class SheetProvider extends ChangeNotifier {
           }
 
           // Serializando os dados mapeados
-          String excelData = jsonEncode(rowsData);
+          excelJson = jsonEncode(rowsData);
 
-          // Salvando no SharedPreferences
-          Future.wait([
-            prefs.setString('planilha', excelData),
-            prefs.setStringList('feriados', feriadosList)
-          ]);
+          // // Salvando no SharedPreferences
+          // Future.wait([
+          //   prefs.setString('planilha', excelData),
+          //   prefs.setStringList('feriados', feriadosList)
+          // ]);
           await loadServidores();
         });
       });
@@ -268,10 +270,10 @@ class SheetProvider extends ChangeNotifier {
     daysWorked.clear();
     excelExportData = [];
     _servidoresList = [];
-    await Future.wait([
-      prefs.remove('planilha'),
-      prefs.remove('feriados')
-    ]);
+    // await Future.wait([
+    //   prefs.remove('planilha'),
+    //   prefs.remove('feriados')
+    // ]);
     loading = false;
     notifyListeners();
   }

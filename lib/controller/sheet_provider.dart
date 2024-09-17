@@ -45,7 +45,6 @@ class SheetProvider extends ChangeNotifier {
 
       setRows();
       loading = false;
-      notifyListeners();
 
       return;
     }catch(e) {

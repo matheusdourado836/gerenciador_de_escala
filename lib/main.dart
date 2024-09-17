@@ -1,7 +1,9 @@
+import 'package:escala_trabalho/controller/sheet_provider.dart';
 import 'package:escala_trabalho/pages/home/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -16,7 +18,14 @@ void main() async {
       // Setting to 1.0 will profile 100% of sampled transactions:
       options.profilesSampleRate = 1.0;
     },
-    appRunner: () => runApp(const MyApp()),
+    appRunner: () => runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => SheetProvider())
+        ],
+        child: const MyApp(),
+      )
+    ),
   );
 }
 

@@ -18,6 +18,7 @@ class SheetProvider extends ChangeNotifier {
   List<DataRow> rows = [];
   Map<String, int> daysWorked = {};
   String excelJson = '';
+  List<String> feriadosListString = [];
 
   bool loading = false;
 
@@ -28,7 +29,6 @@ class SheetProvider extends ChangeNotifier {
     try {
       loading = true;
       notifyListeners();
-      excelJson = '';
       daysWorked.clear();
       excelExportData = [];
       _servidoresList = [];
@@ -36,7 +36,7 @@ class SheetProvider extends ChangeNotifier {
       //
       // final servidoresJson = prefs.getString('planilha');
       // final feriadosList = prefs.getStringList('feriados') ?? [];
-      feriados = feriados.toList();
+      feriados = feriadosListString.map((f) => DateTime.parse(f)).toList();
       if(excelJson.isNotEmpty) {
         for(var servidor in jsonDecode(excelJson)) {
           _servidoresList.add(fromJson(servidor));
@@ -156,7 +156,6 @@ class SheetProvider extends ChangeNotifier {
           var excel = Excel.decodeBytes(fileBytes);
 
           List<Map<String, String>> rowsData = [];
-          List<String> feriadosList = [];
 
           for (var table in excel.tables.keys) {
             var sheet = excel.tables[table]!;
@@ -183,7 +182,7 @@ class SheetProvider extends ChangeNotifier {
                 // Ignorando a coluna de feriados/recesso
                 if (key.toLowerCase().contains('feriado')) {
                   if(row[j]?.value?.toString().isNotEmpty ?? false) {
-                    feriadosList.add(row[j]?.value?.toString() ?? '');
+                    feriadosListString.add(row[j]?.value?.toString() ?? '');
                   }
                   continue;
                 }

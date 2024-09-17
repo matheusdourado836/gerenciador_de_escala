@@ -55,6 +55,8 @@ class SheetProvider extends ChangeNotifier {
   }
 
   void setRows() {
+    List<Map<String, dynamic>> actions = [];
+    List<Map<String, dynamic>> daysWorkedList = [];
     rows = [];
     List<Servidor> filaServidores = List.from(_servidoresList); // Cópia da lista original
     int count = 0;
@@ -90,24 +92,20 @@ class SheetProvider extends ChangeNotifier {
             filaServidores.removeAt(count);
           }
 
-          // for(var servidor in servidoresDeFerias) {
-          //   if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
-          //     filaServidores.insert(count, servidor); // Adiciona o novo servidor no lugar do dia de retorno
-          //     servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
-          //   }
-          // }
+          for(var servidor in servidoresDeFerias) {
+            if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
+              actions.add({"servidor": servidor, "index": i, "date": formattedDate});
+              servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
+            }
+          }
 
           if(count == filaServidores.length) {
             count = 0;
           }
 
-          if (daysWorked.containsKey(filaServidores[count].nome)) {
-            daysWorked[filaServidores[count].nome] = daysWorked[filaServidores[count].nome]! + 1;
-          } else {
-            daysWorked[filaServidores[count].nome] = 1;
-          }
           // Adiciona a linha na tabela
           excelExportData.add({'Data': formattedDate, 'Servidor': filaServidores[count].nome});
+          daysWorkedList.add({'Data': formattedDate, 'Servidor': filaServidores[count].nome});
           rows.add(DataRow(
             cells: [
               DataCell(Text(formattedDate)),
@@ -128,6 +126,26 @@ class SheetProvider extends ChangeNotifier {
               const DataCell(Text('FIM DE SEMANA')),
             ],
           ));
+        }
+      }
+
+      for(var action in actions) {
+        final row = DataRow(
+          cells: [
+            DataCell(Text(action["date"])),
+            DataCell(Text(action["servidor"].nome)),
+          ],
+        );
+        daysWorkedList.add({'Data': action["date"], 'Servidor': action["servidor"].nome});
+        rows.removeAt(action["index"]);
+        rows.insert(action["index"], row);
+      }
+
+      for(var data in daysWorkedList) {
+        if (daysWorked.containsKey(data["Servidor"])) {
+          daysWorked[data["Servidor"]] = daysWorked[data["Servidor"]]! + 1;
+        } else {
+          daysWorked[data["Servidor"]] = 1;
         }
       }
     }

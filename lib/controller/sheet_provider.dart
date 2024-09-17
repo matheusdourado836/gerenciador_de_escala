@@ -94,7 +94,7 @@ class SheetProvider extends ChangeNotifier {
           for(var servidor in servidoresDeFerias) {
             if ((currentDay.day == servidor.diaDeRetorno!.day) && currentDay.month == servidor.diaDeRetorno!.month) {
               actions.add({"servidor": servidor, "index": i, "date": formattedDate});
-              servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
+              //servidoresDeFerias.remove(servidor); // Remove servidor da lista de ferias
             }
           }
 

@@ -32,10 +32,16 @@ class SheetProvider extends ChangeNotifier {
       setServidores();
       setFeriados();
       setMonthsList();
-      setRows();
+      try {
+
+      }catch(e, stack) {
+        setRows();
+        debugPrint('Erro ao gerar rows: $e');
+        await Sentry.captureException(e, stackTrace: stack);
+      }
 
       return;
-    } catch (e) {
+    } catch (e, stack) {
       final err = e as RangeError;
       print('Erro ao carergar servidores $err /// ${err.stackTrace}');
       await Sentry.captureException(e);
@@ -92,14 +98,6 @@ class SheetProvider extends ChangeNotifier {
     return isInVacation;
   }
 
-  // int getFirstAvailable(List<Servidor> list, Servidor servidor, DateTime currentDay) {
-  //   int index = list.indexOf(servidor);
-  //   final sublist = list.sublist(index);
-  //   final firstAvailable = sublist.firstWhere((servidor) => !checkIfIsInVacation(servidor, currentDay));
-  //
-  //   return list.indexOf(firstAvailable);
-  // }
-
   void setRows() {
     List<Map<String, dynamic>> daysWorkedList = [];
     List<String> daysList = [];
@@ -128,13 +126,6 @@ class SheetProvider extends ChangeNotifier {
                 count--;
               }
             }
-            // if (checkIfIsInVacation(filaServidores[count], currentDay)) {
-            //   print('caiu aqui /// ${filaServidores[count]}');
-            //   final current = filaServidores[count];
-            //   //count++;
-            //   //count = getFirstAvailable(filaServidores, filaServidores[count], currentDay);
-            //   filaServidores.remove(current);
-            // }
 
             for(var servidor in servidoresDeFerias) {
               if(currentDay.day == servidor.diaDeRetorno!.day && currentDay.month == servidor.diaDeRetorno!.month) {

@@ -74,7 +74,6 @@ class SheetProvider extends ChangeNotifier {
 
   List<Servidor> checkIfIsInVacation(List<Servidor> servidores, DateTime currentDay) {
     List<Servidor> innerList = servidores;
-    bool isInVacation = false;
     for(Servidor servidor in servidores) {
       if (servidor.ferias != null && servidor.ferias!.isNotEmpty) {
         DateTime dezDiasAntes = calculate10DaysBefore(servidor.ultimoDiaUtil!);
@@ -84,7 +83,6 @@ class SheetProvider extends ChangeNotifier {
         bool isSameAsTenDays = currentDay == dezDiasAntes;
         bool isSameAsLastDay = currentDay == lastVacationDay;
         if((isSameAsTenDays || isSameAsLastDay) || (isAfter && isBefore)) {
-          isInVacation = true;
           innerList = innerList.where((s) => s.nome != servidor.nome).toList();
         }
       }
@@ -289,12 +287,9 @@ class SheetProvider extends ChangeNotifier {
 
         for (int i = 0; i < excelExportData.length; i++) {
           var row = excelExportData[i];
-          sheet
-              .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 0))
-              .value = TextCellValue(row['Data']);
-          sheet
-              .cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 1))
-              .value = TextCellValue(row['Servidor']);
+          final key = row.keys.first;
+          sheet.cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 0)).value = TextCellValue(key);
+          sheet.cell(CellIndex.indexByColumnRow(rowIndex: i + 1, columnIndex: 1)).value = TextCellValue(row[key]);
         }
 
         // Salvar o arquivo Excel como bytes

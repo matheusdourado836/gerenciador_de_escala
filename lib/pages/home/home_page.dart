@@ -1,5 +1,6 @@
 import 'package:escala_trabalho/controller/sheet_provider.dart';
 import 'package:escala_trabalho/model/servidor.dart';
+import 'package:escala_trabalho/pages/home/select_month_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     sheetProvider = Provider.of<SheetProvider>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => sheetProvider.loadServidores(false));
   }
 
   @override
@@ -32,7 +34,11 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Distribuição de Servidores'),
         actions: [
           TextButton.icon(
-              onPressed: sheetProvider.pickAndReadExcel,
+              onPressed: () => showDialog(context: context, builder: (context) => const SelectMonthDialog()).then((res) {
+                if(res ?? false) {
+                  sheetProvider.pickAndReadExcel();
+                }
+              }),
               label: const Text('Adicionar planilha', style: TextStyle(fontSize: 20)),
               icon: const Icon(Icons.add, size: 32)
           ),
@@ -143,7 +149,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton.large(
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
-        onPressed: () => sheetProvider.clearData(),
+        onPressed: () => sheetProvider.clearData(true),
         child: const Icon(Icons.delete, size: 48),
       ),
     );

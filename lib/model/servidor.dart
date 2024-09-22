@@ -15,7 +15,7 @@ class Servidor {
 
   @override
   String toString() {
-    return 'Servidor(nome: $nome, ferias: $ferias, ultimoDiaUtil: $ultimoDiaUtil)';
+    return '$nome';
   }
 
   Map<String, dynamic> toJson() => {
@@ -135,41 +135,3 @@ Servidor fromJson(Map<String, dynamic> json) {
     diaDeRetorno: diaDeRetorno
   );
 }
-
-// List<Map<String, dynamic>> servidores = [
-//   {
-//     "nome": 'Alessia',
-//     "ferias": "25/09/2024 a 08/10/2024",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Erica',
-//     "ferias": "",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Jose Maria',
-//     "ferias": "",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Marcelo',
-//     "ferias": "03/10/2024 a 05/10/2024",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Romina',
-//     "ferias": "28/10/2024 a 30/10/2024",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Ronaldo',
-//     "ferias": "",
-//     "ultimoDiaUtil": ""
-//   },
-//   {
-//     "nome": 'Carlos',
-//     "ferias": "28/10/2024 a 15/11/2024",
-//     "ultimoDiaUtil": ""
-//   },
-// ];

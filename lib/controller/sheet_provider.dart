@@ -89,7 +89,8 @@ class SheetProvider extends ChangeNotifier {
         bool isSameAsLastDay = currentDay == lastVacationDay;
         if((isSameAsTenDays || isSameAsLastDay) || (isAfter && isBefore)) {
           isInVacation = true;
-          servidores.remove(servidor);
+          servidores = servidores.where((s) => s != servidor).toList();
+          print(servidores);
         }
       }
     }

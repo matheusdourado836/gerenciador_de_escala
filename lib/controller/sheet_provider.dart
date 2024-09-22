@@ -32,12 +32,7 @@ class SheetProvider extends ChangeNotifier {
       setServidores();
       setFeriados();
       setMonthsList();
-      try {
-        setRows();
-      }catch(e, stack) {
-        debugPrint('Erro ao gerar rows: $e');
-        await Sentry.captureException(e, stackTrace: stack);
-      }
+      setRows();
 
       return;
     } catch (e, stack) {
@@ -77,7 +72,8 @@ class SheetProvider extends ChangeNotifier {
     }
   }
 
-  bool checkIfIsInVacation(List<Servidor> servidores, DateTime currentDay) {
+  List<Servidor> checkIfIsInVacation(List<Servidor> servidores, DateTime currentDay) {
+    List<Servidor> innerList = servidores;
     bool isInVacation = false;
     for(Servidor servidor in servidores) {
       if (servidor.ferias != null && servidor.ferias!.isNotEmpty) {
@@ -89,13 +85,12 @@ class SheetProvider extends ChangeNotifier {
         bool isSameAsLastDay = currentDay == lastVacationDay;
         if((isSameAsTenDays || isSameAsLastDay) || (isAfter && isBefore)) {
           isInVacation = true;
-          servidores = servidores.where((s) => s != servidor).toList();
-          print(servidores);
+          innerList = innerList.where((s) => s.nome != servidor.nome).toList();
         }
       }
     }
 
-    return isInVacation;
+    return innerList;
   }
 
   void setRows() {
@@ -121,10 +116,9 @@ class SheetProvider extends ChangeNotifier {
               'raw': currentDay,
             });
           } else if (!isWeekend(currentDay)) {
-            if(checkIfIsInVacation(filaServidores, currentDay)) {
-              if(count > 0) {
-                count--;
-              }
+            filaServidores = checkIfIsInVacation(filaServidores, currentDay);
+            if(count == filaServidores.length) {
+              count--;
             }
 
             for(var servidor in servidoresDeFerias) {
@@ -132,7 +126,7 @@ class SheetProvider extends ChangeNotifier {
                 filaServidores.insert(count, servidor);
               }
             }
-            //print(filaServidores);
+
             // Adiciona a linha na tabela
             excelExportData.add({
               formattedDate: filaServidores[count].nome,

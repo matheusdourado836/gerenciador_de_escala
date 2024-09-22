@@ -42606,6 +42606,7 @@ case 9:n.TR()
 n.TG()
 n.TL()
 p=12
+n.TQ()
 p=4
 s=14
 break
@@ -42613,7 +42614,6 @@ case 12:p=11
 h=o
 m=A.ae(h)
 l=A.aC(h)
-n.TQ()
 $.wb.$1("Erro ao gerar rows: "+A.m(m))
 s=15
 return A.G($.fk().he(m,null,l,null),$async$lz)

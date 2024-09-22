@@ -33,9 +33,8 @@ class SheetProvider extends ChangeNotifier {
       setFeriados();
       setMonthsList();
       try {
-
-      }catch(e, stack) {
         setRows();
+      }catch(e, stack) {
         debugPrint('Erro ao gerar rows: $e');
         await Sentry.captureException(e, stackTrace: stack);
       }

@@ -311,6 +311,7 @@ class _HomePageMobileState extends State<HomePageMobile> {
                 rows = [];
                 rowsDivided = [];
                 _nextPage = false;
+                i = 0;
               }));
             },
             child: const Icon(Icons.delete),

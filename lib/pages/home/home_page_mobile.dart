@@ -168,9 +168,11 @@ class _HomePageMobileState extends State<HomePageMobile> {
                           DropdownMenuItem<String>(value: option.values.first, child: Text(option.values.first, style: const TextStyle(fontSize: 16),))
                         ).toList(),
                         onChanged: value.oneMonthOnly ? null : (String? newValue) {
-                          value.selectedOption = newValue!;
-                          final option = value.monthsToGenerate.firstWhere((e) => e.values.first == newValue);
-                          setState(() => i = value.monthsToGenerate.indexOf(option));
+                          if(newValue != null) {
+                            value.selectedOption = newValue;
+                            final option = value.monthsToGenerate.firstWhere((e) => e.values.first == newValue);
+                            setState(() => i = value.monthsToGenerate.indexOf(option));
+                          }
                         }
                     ),
                     ListView.separated(

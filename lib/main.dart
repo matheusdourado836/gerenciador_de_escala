@@ -1,5 +1,7 @@
 import 'package:escala_trabalho/controller/sheet_provider.dart';
-import 'package:escala_trabalho/pages/home/home_page.dart';
+import 'package:escala_trabalho/pages/home/home_page_desktop.dart';
+import 'package:escala_trabalho/pages/home/home_page_mobile.dart';
+import 'package:escala_trabalho/pages/responsive/responsive_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -44,9 +46,21 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromRGBO(60, 141, 188, 1)),
         useMaterial3: true,
+        textButtonTheme: const TextButtonThemeData(
+          style: ButtonStyle(
+            foregroundColor: WidgetStatePropertyAll(Colors.white)
+          )
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color.fromRGBO(0, 120, 170, 1),
+          foregroundColor: Colors.white,
+          actionsIconTheme: IconThemeData(
+            color: Colors.white
+          )
+        )
       ),
       routes: {
-        "/": (context) => const HomePage()
+        "/": (context) => const ResponsiveLayout(mobileScreen: HomePageMobile(), desktopScreen: HomePageDesktop())
       },
     );
   }

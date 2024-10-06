@@ -1,4 +1,4 @@
-import '../pages/home/home_page.dart';
+import '../pages/home/home_page_desktop.dart';
 
 class Servidor {
   String nome;

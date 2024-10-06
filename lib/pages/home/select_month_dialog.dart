@@ -11,8 +11,7 @@ class SelectMonthDialog extends StatefulWidget {
 }
 
 class _SelectMonthDialogState extends State<SelectMonthDialog> {
-  String _selectedOption = 'Janeiro';
-  bool _oneMonthOnly = false;
+  late final SheetProvider sheetProvider;
   final List<String> _options = [
     'Janeiro',
     'Fevereiro',
@@ -29,6 +28,12 @@ class _SelectMonthDialogState extends State<SelectMonthDialog> {
   ];
 
   @override
+  void initState() {
+    sheetProvider = Provider.of<SheetProvider>(context, listen: false);
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Gerar escala a partir de qual mês?'),
@@ -38,17 +43,17 @@ class _SelectMonthDialogState extends State<SelectMonthDialog> {
         children: [
           DropdownButton<String>(
             isExpanded: true,
-            value: _selectedOption,
+            value: sheetProvider.selectedOption,
             items: _options.map((String option) => DropdownMenuItem<String>(value: option, child: Text(option))).toList(),
             onChanged: (String? newValue) {
-              setState(() => _selectedOption = newValue!);
+              setState(() => sheetProvider.selectedOption = newValue!);
             }
           ),
           InkWell(
-            onTap: () => setState(() => _oneMonthOnly = !_oneMonthOnly),
+            onTap: () => setState(() => sheetProvider.oneMonthOnly = !sheetProvider.oneMonthOnly),
             child: Row(
               children: [
-                Checkbox(value: _oneMonthOnly, onChanged: (value) => setState(() => _oneMonthOnly = !_oneMonthOnly)),
+                Checkbox(value: sheetProvider.oneMonthOnly, onChanged: (value) => setState(() => sheetProvider.oneMonthOnly = !sheetProvider.oneMonthOnly)),
                 const Text('Gerar somente este mês')
               ],
             ),
@@ -59,19 +64,19 @@ class _SelectMonthDialogState extends State<SelectMonthDialog> {
         TextButton(
           onPressed: () {
             final sheetProvider = Provider.of<SheetProvider>(context, listen: false);
-            int monthIndex = _options.indexOf(_selectedOption);
-            if(_oneMonthOnly) {
-              final key = monthMap.keys.firstWhere((e) => e == _selectedOption.toLowerCase());
-              sheetProvider.monthsToGenerate.add({"mes": _selectedOption, "index": monthMap[key]});
+            int monthIndex = _options.indexOf(sheetProvider.selectedOption);
+            if(sheetProvider.oneMonthOnly) {
+              final key = monthsMap.keys.firstWhere((e) => e == sheetProvider.selectedOption.toLowerCase());
+              sheetProvider.monthsToGenerate.add({"mes": sheetProvider.selectedOption, "index": monthsMap[key]});
             }else {
               for(var i = monthIndex; i < _options.length; i++) {
-                final key = monthMap.keys.firstWhere((e) => e == _options[i].toLowerCase());
-                sheetProvider.monthsToGenerate.add({"mes": _options[i], "index": monthMap[key]});
+                final key = monthsMap.keys.firstWhere((e) => e == _options[i].toLowerCase());
+                sheetProvider.monthsToGenerate.add({"mes": _options[i], "index": monthsMap[key]});
               }
             }
             Navigator.pop(context, true);
           },
-          child: const Text('Gerar')
+          child: const Text('Gerar', style: TextStyle(color: Color.fromRGBO(60, 141, 188, 1)),)
         ),
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar', style: TextStyle(color: Colors.red)))
       ],
